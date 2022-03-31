@@ -1,0 +1,12 @@
+{
+    "name": "aws-infra",
+    "main": "index.js",
+    "dependencies": {
+        "@pulumi/aws": "^3.25.1",
+        "@pulumi/awsx": "^0.24.0",
+        "@pulumi/pulumi": "^2.0.0",
+        "aws-sdk": "^2.855.0",
+        "aws-xray-sdk": "^3.2.0",
+        "axios": "^0.21.1"
+    }
+}

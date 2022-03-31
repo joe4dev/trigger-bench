@@ -1,0 +1,9 @@
+{
+    "name": "aws-shared",
+    "main": "index.js",
+    "dependencies": {
+        "@pulumi/aws": "^3.25.1",
+        "@pulumi/awsx": "^0.24.0",
+        "@pulumi/pulumi": "^2.23.1"
+    }
+}
