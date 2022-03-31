@@ -1,0 +1,3 @@
+name: aws-trigger-bench
+runtime: nodejs
+description: A benchmark for AWS Lambda triggers.

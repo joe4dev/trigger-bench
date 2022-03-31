@@ -2,8 +2,8 @@
     "name": "aws-http",
     "main": "index.js",
     "dependencies": {
-        "@pulumi/aws": "^3.0.0",
-        "@pulumi/awsx": "^0.22.0",
-        "@pulumi/pulumi": "^2.25.2"
+        "@pulumi/aws": "^4.23.0",
+        "@pulumi/awsx": "^0.33.0",
+        "@pulumi/pulumi": "^3.27.0"
     }
 }

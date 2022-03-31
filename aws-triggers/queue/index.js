@@ -1,5 +1,5 @@
 const pulumi = require('@pulumi/pulumi');
-const automation = require('@pulumi/pulumi/x/automation');
+const automation = require('@pulumi/pulumi/automation');
 const aws = require('@pulumi/aws');
 
 const getQueueTrigger = async () => {
@@ -7,7 +7,7 @@ const getQueueTrigger = async () => {
   const user = await automation.LocalWorkspace.create({})
     .then((ws) => ws.whoAmI()
       .then((i) => i.user));
-  const shared = new pulumi.StackReference(`${user}/aws-shared/dev`);
+  const shared = new pulumi.StackReference(`${user}/aws-trigger-bench/shared`);
 
   const roleId = shared.requireOutput('roleId');
   const role = aws.iam.Role.get('DeveloperRole', roleId);
@@ -35,4 +35,4 @@ const getQueueTrigger = async () => {
   return pulumi.output(aws.sqs.getQueue({ name: queue.name }));
 };
 
-exports.queueUrl = getQueueTrigger().then((queue) => queue.url);
+exports.url = getQueueTrigger().then((queue) => queue.url);

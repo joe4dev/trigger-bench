@@ -1,5 +1,5 @@
 const pulumi = require('@pulumi/pulumi');
-const automation = require('@pulumi/pulumi/x/automation');
+const automation = require('@pulumi/pulumi/automation');
 const aws = require('@pulumi/aws');
 
 const getStorageTrigger = async () => {
@@ -7,7 +7,7 @@ const getStorageTrigger = async () => {
   const user = await automation.LocalWorkspace.create({})
     .then((ws) => ws.whoAmI()
       .then((i) => i.user));
-  const shared = new pulumi.StackReference(`${user}/aws-shared/dev`);
+  const shared = new pulumi.StackReference(`${user}/aws-trigger-bench/shared`);
 
   const roleId = shared.requireOutput('roleId');
   const role = aws.iam.Role.get('DeveloperRole', roleId);
@@ -34,4 +34,4 @@ const getStorageTrigger = async () => {
   return triggerBucket;
 };
 
-exports.bucketId = getStorageTrigger().then((bucket) => bucket.id);
+exports.url = getStorageTrigger().then((bucket) => bucket.id);
