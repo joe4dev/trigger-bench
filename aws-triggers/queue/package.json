@@ -2,8 +2,8 @@
     "name": "aws-queue",
     "main": "index.js",
     "dependencies": {
-        "@pulumi/aws": "^4.23.0",
-        "@pulumi/pulumi": "^3.27.0",
-        "aws-xray-sdk": "^3.2.0"
+        "@pulumi/aws": "^4.38.1",
+        "@pulumi/pulumi": "^3.28.0",
+        "aws-xray-sdk": "^3.3.4"
     }
 }

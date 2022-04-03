@@ -15,7 +15,7 @@ const getQueueTrigger = async () => {
   // The lambda function, retrieved from a file in order to enable X-ray
   const fn = new aws.lambda.Function('QueueTriggerLambda', {
     code: new pulumi.asset.AssetArchive({
-      '__index.js': new pulumi.asset.FileAsset('./handler.js'),
+      '__index.js': new pulumi.asset.FileAsset('../handlers/index.js'),
       node_modules: new pulumi.asset.FileArchive('./node_modules'), // Automatically zipped when deploying
     }),
     handler: '__index.handler', // Change to __index.<xyz> to change the lambda function

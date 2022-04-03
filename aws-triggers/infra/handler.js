@@ -3,29 +3,35 @@ const aws = AWSXRay.captureAWS(require('aws-sdk'));
 AWSXRay.captureHTTPsGlobal(require('http'), true);
 AWSXRay.captureHTTPsGlobal(require('https'), true);
 const axios = require('axios');
-const fs = require('fs').promises;
 
 const getHttpLambda = (opts) => new Promise((resolve) => {
   // Start benchmark by issuing an HTTP request to the AWS APIGateway trigger using url param
   const { url } = opts;
 
+  const segment = AWSXRay.getSegment(); //returns the facade segment
+  const subsegment = segment.addNewSubsegment('http_trigger');
   axios.get(url)
-    .then(() => resolve({
-      statusCode: 200,
-      body: 'AWS - HTTP trigger benchmark successfully started',
-      isBase64Encoded: false,
-      headers: {
-        'content-type': 'text/plain',
-      },
-    }))
-    .catch((e) => resolve({
-      statusCode: 200,
-      body: `AWS - HTTP trigger benchmark failed to start\n\nError: ${e.message}`,
-      isBase64Encoded: false,
-      headers: {
-        'content-type': 'text/plain',
-      },
-    }));
+    .then(() => {
+        resolve({
+        statusCode: 200,
+        body: 'AWS - HTTP trigger benchmark successfully started',
+        isBase64Encoded: false,
+        headers: {
+          'content-type': 'text/plain',
+        },
+      })}
+    )
+    .catch((e) => {
+        resolve({
+        statusCode: 200,
+        body: `AWS - HTTP trigger benchmark failed to start\n\nError: ${e.message}`,
+        isBase64Encoded: false,
+        headers: {
+          'content-type': 'text/plain',
+        },
+      })
+    })
+    .finally(() => subsegment.close());
 });
 
 const getStorageLambda = (opts) => new Promise((resolve) => {
@@ -34,44 +40,23 @@ const getStorageLambda = (opts) => new Promise((resolve) => {
   // Cannot use Pulumi dependencies inside a lambda, must rely on AWS SDk
   const s3Client = new aws.S3();
 
-  // We are only allowed to write to /tmp inside a lambda
-  fs.writeFile('/tmp/textfile.txt', 'Hello world!')
-    .then(() => {
-      fs.readFile('/tmp/textfile.txt').then((res) => {
-        s3Client.putObject({
-          Bucket: bucketId,
-          Key: `${new Date().getTime()}.txt`, // Set current time as filename
-          Body: res,
-          ContentType: 'text/plain',
-        }).promise()
-          .then((data) => {
-            resolve({
-              statusCode: 200,
-              body: 'AWS - Storage trigger benchmark successfully started',
-              isBase64Encoded: false,
-              headers: {
-                'content-type': 'text/plain',
-              },
-            });
-          }).catch((e) => {
-            resolve({
-              statusCode: 200,
-              body: `AWS - Storage trigger benchmark failed to start\n\nError: ${e.message}`,
-              isBase64Encoded: false,
-              headers: {
-                'content-type': 'text/plain',
-              },
-            });
-          });
-      }).catch((e) => {
-        resolve({
-          statusCode: 200,
-          body: `AWS - Storage trigger benchmark failed to start\n\nError: ${e.message}`,
-          isBase64Encoded: false,
-          headers: {
-            'content-type': 'text/plain',
-          },
-        });
+  const segment = AWSXRay.getSegment(); //returns the facade segment
+  const subsegment = segment.addNewSubsegment('storage_trigger');
+
+  s3Client.putObject({
+    Bucket: bucketId,
+    Key: `${new Date().getTime()}.txt`, // Set current time as filename
+    Body: 'Hello World!',
+    ContentType: 'text/plain',
+  }).promise()
+    .then((data) => {
+      resolve({
+        statusCode: 200,
+        body: 'AWS - Storage trigger benchmark successfully started',
+        isBase64Encoded: false,
+        headers: {
+          'content-type': 'text/plain',
+        },
       });
     })
     .catch((e) => {
@@ -82,8 +67,9 @@ const getStorageLambda = (opts) => new Promise((resolve) => {
         headers: {
           'content-type': 'text/plain',
         },
-      });
-    });
+      })
+    })
+    .finally(() => subsegment.close());
 });
 
 const getQueueLambda = (opts) => new Promise((resolve) => {
@@ -94,7 +80,19 @@ const getQueueLambda = (opts) => new Promise((resolve) => {
     apiVersion: '2012-11-05',
   });
 
-  // Build the message
+  // Capture custom subsegment for queue triggering to get a parent id for
+  // passing via the custom message attribute.
+  // See: https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-subsegments.html
+  const segment = AWSXRay.getSegment(); //returns the facade segment
+  const subsegment = segment.addNewSubsegment('queue_trigger');
+  // See example of trace header construction in AWS X-Ray SDK for node:
+  // https://github.com/aws/aws-xray-sdk-node/blob/a9d0cf9cbd0328e40f30554f61b4bd5fac08bafc/packages/core/lib/patchers/http_p.js#L127
+  // Alternatively, process.env._X_AMZN_TRACE_ID contains the correct trace_id
+  // but has a wrong parent_id.
+  const parent = segment
+  const awsTraceHeader = `Root=${parent.trace_id};Parent=${subsegment.id};Sampled=${parent.notTraced ? '0' : '1'}`
+
+  // Build the queue message
   const params = {
     // Remove DelaySeconds parameter and value for FIFO queues
     DelaySeconds: 0,
@@ -102,24 +100,16 @@ const getQueueLambda = (opts) => new Promise((resolve) => {
       AWSTraceHeader: {
         DataType: 'String',
         // eslint-disable-next-line no-underscore-dangle
-        StringValue: process.env._X_AMZN_TRACE_ID,
+        StringValue: awsTraceHeader,
       },
     },
     MessageAttributes: {
       Title: {
         DataType: 'String',
-        StringValue: 'Benchmark message',
-      },
-      Author: {
-        DataType: 'String',
-        StringValue: 'Benchmark',
-      },
-      WeeksOn: {
-        DataType: 'Number',
-        StringValue: '6',
+        StringValue: 'Empty',
       },
     },
-    MessageBody: 'Hello world',
+    MessageBody: 'Hello world!',
     // MessageDeduplicationId: "TheWhistler",  // Required for FIFO queues
     // MessageGroupId: "Group1",  // Required for FIFO queues
     QueueUrl: queueUrl,
@@ -146,7 +136,8 @@ const getQueueLambda = (opts) => new Promise((resolve) => {
           'content-type': 'text/plain',
         },
       });
-    });
+    })
+    .finally(() => subsegment.close());
 });
 
 const fn = async (req, ctx) => {

@@ -16,9 +16,10 @@ const getEndpoint = async () => {
   // The lambda function, retrieved from a file in order to enable X-ray
   const fn = new aws.lambda.Function('HTTPTriggerLambda', {
     code: new pulumi.asset.AssetArchive({
-      '__index.js': new pulumi.asset.FileAsset('../workloads/index.js'),
+      '__index.js': new pulumi.asset.FileAsset('../handlers/index.js'),
+      node_modules: new pulumi.asset.FileArchive('./node_modules'), // Automatically zipped when deploying
     }),
-    handler: '__index.factorial', // Change to __index.<xyz> to change the lambda function
+    handler: '__index.handler', // Change to __index.<xyz> to change the lambda function
     runtime: aws.lambda.NodeJS12dXRuntime,
     role: role.arn,
     tracingConfig: {

@@ -7,13 +7,11 @@ trigger_bench:
   provider:
   - aws
   - pulumi
-  trigger: queue
+  trigger: storage
   region: us-east-1
 """
 supported_triggers = ['http', 'queue', 'storage']
-PULUMI_IMAGE = 'pulumi/pulumi:3.27.0'
-
-# Pulumi example: https://github.com/perfkit/pulumi-examples/blob/master/aws-ts-apigateway/count_api_benchmark.py
+PULUMI_IMAGE = 'pulumi/pulumi:3.28.0'
 
 
 def prepare(spec):
@@ -30,7 +28,7 @@ def prepare(spec):
         ' && pulumi up -f -y'
     )
     spec.run(shared_cmd, image=PULUMI_IMAGE)
-    # Deploy receiving function 2 with trigger
+    # Deploy receiving Function2 with respective trigger
     receiver_cmd = (
         f"cd {trigger}"
         f" && pulumi stack select {trigger} -c"
@@ -39,7 +37,7 @@ def prepare(spec):
     )
     spec.run(receiver_cmd, image=PULUMI_IMAGE)
     spec['receiver'] = last_line(spec.run(f"cd {trigger} && PULUMI_SKIP_UPDATE_CHECK=true pulumi stack output url", image=PULUMI_IMAGE))
-    # Deploy invoking function 1 called infra
+    # Deploy invoking Function1 called infra
     infra_cmd = (
         'cd infra'
         ' && pulumi stack select infra -c'
