@@ -1,3 +1,6 @@
+import logging
+
+
 BENCHMARK_CONFIG = """
 trigger_bench:
   description: Measures the latency to trigger an AWS Lambda function.
@@ -35,7 +38,7 @@ def prepare(spec):
         ' && pulumi up -f -y'
     )
     spec.run(receiver_cmd, image=PULUMI_IMAGE)
-    spec['receiver'] = last_line(spec.run(f"cd {trigger} && pulumi stack output url", image=PULUMI_IMAGE))
+    spec['receiver'] = last_line(spec.run(f"cd {trigger} && PULUMI_SKIP_UPDATE_CHECK=true pulumi stack output url", image=PULUMI_IMAGE))
     # Deploy invoking function 1 called infra
     infra_cmd = (
         'cd infra'
@@ -44,8 +47,9 @@ def prepare(spec):
         ' && pulumi up -f -y'
     )
     spec.run(infra_cmd, image=PULUMI_IMAGE)
-    spec['invoker'] = last_line(spec.run('cd infra && pulumi stack output url', image=PULUMI_IMAGE))
+    spec['invoker'] = last_line(spec.run('cd infra && PULUMI_SKIP_UPDATE_CHECK=true pulumi stack output url', image=PULUMI_IMAGE))
     spec['benchmark_url'] = f"{spec['invoker']}?trigger={trigger}&input={spec['receiver']}"
+    logging.info(f"Deployed {spec['trigger']} trigger available at benchmark_url={spec['benchmark_url']}")
 
 
 def invoke(spec):
@@ -75,5 +79,12 @@ def last_line(log) -> str:
     """Returns the last line of a multiline string.
     This is a workaround to ignore any leading error messages
     potentially printed to sterr or stdout.
-    For example: Pulumi new version available. Docker platform warning."""
+    For example: Docker platform warning.
+    Limitation: Does not work for the Pulumi version check
+    because the warning message comes after the output.
+    Workaround is to disable the version check by setting:
+    PULUMI_SKIP_UPDATE_CHECK=true
+    Source:
+    https://stackoverflow.com/questions/64716331/how-do-i-disable-the-version-check-output-in-pulumi
+    """
     return log.splitlines()[-1].rstrip()
