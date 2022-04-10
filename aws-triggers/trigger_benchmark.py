@@ -7,10 +7,10 @@ trigger_bench:
   provider:
   - aws
   - pulumi
-  trigger: storage
+  trigger: http
   region: us-east-1
 """
-supported_triggers = ['http', 'queue', 'storage']
+supported_triggers = ['http', 'storage', 'queue']
 PULUMI_IMAGE = 'pulumi/pulumi:3.28.0'
 
 

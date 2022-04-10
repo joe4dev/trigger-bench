@@ -9,7 +9,7 @@ trigger_bench:
   provider:
   - azure
   - pulumi
-  trigger: serviceBus
+  trigger: http
   region: eastus
   runtime: node
 """
