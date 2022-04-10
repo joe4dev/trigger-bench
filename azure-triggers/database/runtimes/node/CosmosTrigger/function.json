@@ -1,0 +1,18 @@
+{
+  "bindings": [
+    {
+      "type": "cosmosDBTrigger",
+      "name": "items",
+      "direction": "in",
+      "leaseCollectionName": "leases",
+      "connectionStringSetting": "DATABASE_CONNECTION_STRING",
+      "databaseName": "%DATABASE_NAME%",
+      "collectionName": "%CONTAINER_NAME%",
+      "createLeaseCollectionIfNotExists": true,
+      "maxItemsPerInvocation": 1,
+      "checkpointDocumentCount": 1,
+      "feedPollDelay": 10
+    }
+  ],
+  "scriptFile": "../dist/CosmosTrigger/index.js"
+}

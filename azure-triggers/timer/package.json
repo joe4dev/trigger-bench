@@ -1,0 +1,12 @@
+{
+    "name": "azure-timer",
+    "devDependencies": {
+        "@types/node": "^17.0.14"
+    },
+    "dependencies": {
+        "@pulumi/azure": "^4.36.0",
+        "@pulumi/pulumi": "^3.28.0",
+        "applicationinsights": "^2.3.1",
+        "dotenv": "^16.0.0"
+    }
+}

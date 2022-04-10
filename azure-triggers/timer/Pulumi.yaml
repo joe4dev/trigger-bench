@@ -1,0 +1,3 @@
+name: azure-trigger-bench
+runtime: nodejs
+description: A benchmark for Azure Function triggers.

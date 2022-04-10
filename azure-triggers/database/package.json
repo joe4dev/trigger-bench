@@ -1,0 +1,11 @@
+{
+    "name": "azure-database",
+    "devDependencies": {
+        "@types/node": "^17.0.14"
+    },
+    "dependencies": {
+        "@pulumi/azure": "^4.42.0",
+        "@pulumi/pulumi": "^3.28.0",
+        "dotenv": "^16.0.0"
+    }
+}

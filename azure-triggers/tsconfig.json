@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "outDir": "bin",
+    "target": "es2016",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "pretty": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "files": [
+    "http/index.ts",
+    "shared/index.ts",
+    "infra/index.ts",
+    "storage/index.ts",
+    "queue/index.ts",
+    "database/index.ts",
+    "serviceBus/index.ts",
+    "timer/index.ts",
+    "eventHub/index.ts",
+    "eventGrid/index.ts",
+    "http/index.ts",
+    "database/runtimes/node/CosmosTrigger/index.ts"
+  ]
+}
