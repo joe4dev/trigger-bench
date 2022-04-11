@@ -11,7 +11,7 @@
       "createLeaseCollectionIfNotExists": true,
       "maxItemsPerInvocation": 1,
       "checkpointDocumentCount": 1,
-      "feedPollDelay": 10
+      "feedPollDelay": 1
     }
   ],
   "scriptFile": "../dist/CosmosTrigger/index.js"
