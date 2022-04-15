@@ -1,11 +1,20 @@
+#!/usr/bin/env python
+
+# Usage:
+# 1) Open tmux
+# 2) Activate virtualenv: source sb-env/bin/activate
+# 3) Run ./constant.py 2>&1 | tee -a constant.log
+
 """Constant workload
 Runs an experiment with a constant workload of 1 invocation per second for 60 minutes (3600 samples).
 """
 
 import logging
+import sys
 from pathlib import Path
 from sb.sb import Sb
 
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 # IMPORTANT: Select provider here!
 PROVIDER = 'aws'  # aws or azure
@@ -21,6 +30,7 @@ supported_triggers = {
     'aws': ['http', 'storage', 'queue'],
     'azure': ['http', 'storage', 'queue', 'database', 'serviceBus', 'eventHub', 'eventGrid', 'timer'],
 }
+logging.info(f"Using provider {PROVIDER}.")
 triggers = supported_triggers['aws'] if PROVIDER == 'aws' else supported_triggers['azure']
 
 # Initialize sb SDK
@@ -48,9 +58,10 @@ for trigger in triggers:
     sb.config.set('trigger', trigger)
     sb.prepare()
     sb.invoke('custom', workload_options=options)
-    sb.wait(5 * 60)
+    sb.wait(10 * 60)
     sb.get_traces()
-    sb.analyze_traces()
+    # Save bandwidth by analyzing after downloading from the cloud host
+    # sb.analyze_traces()
 
 logging.info('Destroying all resources ...')
 sb.cleanup()
