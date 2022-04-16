@@ -52,13 +52,15 @@ options = {
 }
 
 # Test all triggers in succession
+MINUTE = 60
 for trigger in triggers:
     logging.info(f"Testing {trigger} trigger ...")
     sb.config.set('label', f"constant_1rps_60min_{trigger}")
     sb.config.set('trigger', trigger)
     sb.prepare()
+    sb.wait(1 * MINUTE)
     sb.invoke('custom', workload_options=options)
-    sb.wait(10 * 60)
+    sb.wait(10 * MINUTE)
     sb.get_traces()
     # Save bandwidth by analyzing after downloading from the cloud host
     # sb.analyze_traces()
