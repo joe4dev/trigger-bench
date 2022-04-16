@@ -41,10 +41,9 @@ def prepare(spec):
 
 
 def invoke(spec):
-    load_dotenv()
-    BENCHMARK_URL = os.getenv('BENCHMARK_URL')
+    load_dotenv(override=True)
     envs = {
-        'BENCHMARK_URL': BENCHMARK_URL
+        'BENCHMARK_URL': os.getenv('BENCHMARK_URL')
     }
     spec.run_k6(envs)
 
