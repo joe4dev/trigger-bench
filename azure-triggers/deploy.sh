@@ -28,12 +28,12 @@ deploy_shared_resources() {
   # Create API key to be able to use Azure Insights REST API TODO use it with REST API
   az config set extension.use_dynamic_install=yes_without_prompt # Required to install and use app-insights module
 
+  # Navigate back to parent directory
+  cd ..
 }
 
 deploy_http_trigger() {
   deploy_shared_resources
-
-  cd ..
 
   # Deploy HTTP trigger
   cd http/ && pulumi stack select trigger -c && pulumi up -f -y
@@ -65,11 +65,6 @@ deploy_storage_trigger() {
   # Deploy shared resources
   deploy_shared_resources
 
-  # Get name of resource group
-  RESOURCE_GROUP=$(pulumi stack output resourceGroupName)
-
-  cd ..
-
   # Deploy storage trigger
   cd storage/ && pulumi stack select trigger -c && pulumi up -f -y
 
@@ -99,11 +94,6 @@ deploy_storage_trigger() {
 deploy_queue_trigger() {
   # Deploy shared resources
   deploy_shared_resources
-
-  # Get name of resource group
-  RESOURCE_GROUP=$(pulumi stack output resourceGroupName)
-
-  cd ..
 
   # Deploy queue trigger
   cd queue/ && pulumi stack select trigger -c && pulumi up -f -y
@@ -135,11 +125,6 @@ deploy_queue_trigger() {
 deploy_database_trigger() {
   # Deploy shared resources
   deploy_shared_resources
-
-  # Get name of resource group
-  RESOURCE_GROUP=$(pulumi stack output resourceGroupName)
-
-  cd ..
 
   # Deploy database trigger
   cd database/ && pulumi stack select trigger -c && pulumi up -f -y
@@ -174,8 +159,6 @@ deploy_timer_trigger() {
   # Deploy shared resources
   deploy_shared_resources
 
-  cd ..
-
   # Deploy database trigger
   cd timer/ && pulumi stack select trigger -c && pulumi up -f -y
 
@@ -201,11 +184,6 @@ deploy_timer_trigger() {
 deploy_serviceBus_trigger() {
   # Deploy shared resources
   deploy_shared_resources
-
-  # Get name of resource group
-  RESOURCE_GROUP=$(pulumi stack output resourceGroupName)
-
-  cd ..
 
   # Deploy serviceBus trigger
   cd serviceBus/ && pulumi stack select trigger -c && pulumi up -f -y
@@ -234,8 +212,6 @@ deploy_eventHub_trigger() {
   # Deploy shared resources
   deploy_shared_resources
 
-  cd ..
-
   # Deploy database trigger
   cd eventHub/ && pulumi stack select trigger -c && pulumi up -f -y
 
@@ -262,8 +238,6 @@ deploy_eventHub_trigger() {
 deploy_eventGrid_trigger() {
   # Deploy shared resources
   deploy_shared_resources
-
-  cd ..
 
   # Deploy event grid trigger
   cd eventGrid/ && pulumi stack select trigger -c && pulumi up -f -y
