@@ -20,6 +20,7 @@ for execution in execution_paths:
     trigger['provider'] = parse_provider(app_config)
     trigger['label'] = app_config.get('label', None)
     trigger['trigger'] = app_config.get('trigger', None)
+    trigger['burst_size'] = app_config.get('burst_size', None)
     trigger_dfs.append(trigger)
 
 # Combine data frames
@@ -28,7 +29,7 @@ traces = pd.concat(trigger_dfs)
 # %% Preprocess data
 warm_traces = filter_traces_warm(traces)
 durations = calculate_durations(warm_traces)
-durations_long = pd.melt(durations, id_vars=['root_trace_id', 'child_trace_id', 'provider', 'trigger', 'label'], var_name='duration_type', value_vars=TIMEDELTA_COLS, value_name='duration')
+durations_long = pd.melt(durations, id_vars=['root_trace_id', 'child_trace_id', 'provider', 'trigger', 'burst_size', 'label'], var_name='duration_type', value_vars=TIMEDELTA_COLS, value_name='duration')
 durations_long['duration_ms'] = durations_long['duration'].dt.total_seconds() * 1000
 
 # Check for negative timediffs
@@ -39,8 +40,11 @@ if not durations_long[durations_long['duration_ms']<0].empty:
     # durations_long = durations_long.drop(durations_long[durations_long['duration_ms']<0].index)
 
 # Select trigger times
-trigger_latency = durations_long[durations_long['duration_type'] == 'trigger_time']
+trigger_latency = durations_long[(durations_long['label'].str.startswith('constant_1rps_60min')) & (durations_long['duration_type'] == 'trigger_time')]
 # trigger_latency = trigger_latency[trigger_latency['trigger'] != 'storage']
+
+# TODO: Add baseline as burst size 1
+burst_df = durations_long[(durations_long['label'].str.startswith('bursty_3000_invocations')) & (durations_long['duration_type'] == 'trigger_time')]
 
 # %% Rename and reorder categories
 df = trigger_latency.copy()
@@ -57,7 +61,8 @@ df['duration_type'] = pd.Categorical(df['duration_type'],
                                 categories=DURATION_MAPPINGS.values(),
                                 ordered=True)
 
-# %% Plots
+### Plots
+# %% Trigger latency plot for Azure
 # Aggregate for annotating summary stats
 df_agg = df.groupby(['provider', 'trigger']).agg(
     mean_latency=('duration_ms', lambda x: x.mean()),
@@ -73,11 +78,11 @@ p = (
     + stat_ecdf(alpha=0.8)
     # Density plot is hard to tune for visually well-perceivable results
     # + geom_density(aes(y=after_stat('count')),alpha=0.1)
-    + geom_vline(df_agg, aes(xintercept='p50_latency', color='trigger'), linetype='dotted', show_legend=False,)
+    + geom_vline(df_agg, aes(xintercept='p50_latency', color='trigger'), linetype='dotted', show_legend=False, alpha=0.5)
     # TODO: Fix label placement:
     # a) Some custom x offset if there are not too many overlapping (should work for 2, harder with 3)
     # b) Outside of canvas: https://stackoverflow.com/questions/67625992/how-to-place-geom-text-labels-outside-the-plot-boundary-in-plotnine
-    + geom_text(df_agg, aes(label='p50_latency', x='p50_latency', y=0.8, color='trigger'), format_string='{:.0f}', show_legend=False, size=8)
+    + geom_text(df_agg, aes(label='p50_latency', x='p50_latency', y=0.5, color='trigger'), format_string='{:.0f}', show_legend=False, size=8)
     + facet_wrap('provider', nrow=2)  # scales = 'free_x'
     + scale_x_log10(labels=format_labels)
     # + xlim(0, 400)
@@ -90,5 +95,23 @@ p = (
     )
 )
 p.save(path=f"{plots_path}", filename=f"trigger_latency.pdf")
+
+# %% Trigger latency plot for different burst sizes
+p = (
+    ggplot(burst_df)
+    + aes(x='duration_ms', color='burst_size')
+    + stat_ecdf(alpha=0.8)
+    + facet_wrap('~ provider + trigger', scales = 'free_x', nrow=2)
+    # + scale_x_log10(labels=format_labels)
+    # + xlim(0, 400)
+    # + xlim(0, 2000)
+    # + xlim(0, 5000)
+    # + xlim(0, 10000)
+    # TODO: Fix color scheme
+    + theme(
+        subplots_adjust={'hspace': 0.55, 'wspace': 0.02}
+    )
+)
+p.save(path=f"{plots_path}", filename=f"trigger_latency_by_burst_size.pdf")
 
 # %%
