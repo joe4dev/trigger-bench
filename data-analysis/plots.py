@@ -65,6 +65,8 @@ df_agg = df.groupby(['provider', 'trigger']).agg(
     p99_latency=('duration_ms', lambda x: x.quantile(0.99))
 )
 df_agg = df_agg.reset_index().dropna()
+def format_labels(breaks):
+    return ["{:.0f}".format(l) for l in breaks]
 p = (
     ggplot(df)
     + aes(x='duration_ms', color='trigger', fill='trigger')
@@ -77,10 +79,12 @@ p = (
     # b) Outside of canvas: https://stackoverflow.com/questions/67625992/how-to-place-geom-text-labels-outside-the-plot-boundary-in-plotnine
     + geom_text(df_agg, aes(label='p50_latency', x='p50_latency', y=0.8, color='trigger'), format_string='{:.0f}', show_legend=False, size=8)
     + facet_wrap('provider', nrow=2)  # scales = 'free_x'
+    + scale_x_log10(labels=format_labels)
     # + xlim(0, 400)
     # + xlim(0, 2000)
     # + xlim(0, 5000)
     # + xlim(0, 10000)
+    # TODO: Fix color scheme
     + theme(
         subplots_adjust={'hspace': 0.55, 'wspace': 0.02}
     )
