@@ -4,13 +4,17 @@ Generates all plots by loading and analyzing all executions
 
 # %% Imports
 import sys
+from pathlib import Path
 from data_importer import *
 from plotnine import *
-from mizani.palettes import hls_palette, husl_palette, hue_pal, gradient_n_pal, cmap_pal, cubehelix_pal, brewer_pal
+from mizani.palettes import brewer_pal
 
 
 # Configure logging
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+
+# Optionally overwrite plots path optionally configurable through PLOTS_PATH
+plots_path = Path('/Users/joe/Documents/Papers/tex22-trigger-bench-ic2e22/plots')
 
 # %% Load data
 execution_paths = find_execution_paths(data_path)
