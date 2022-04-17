@@ -49,7 +49,12 @@ TIMEDELTA_COLS = [
 TRIGGER_MAPPINGS = {
     'http': 'HTTP',
     'queue': 'Queue',
-    'storage': 'Storage'
+    'storage': 'Storage',
+    'database': 'Database',
+    'serviceBus': 'Service Bus',
+    'eventHub': 'Event Hub',
+    'eventGrid': 'Event Grid',
+    'timer': 'Timer'
 }
 
 LABEL_MAPPINGS = {

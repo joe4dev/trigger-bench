@@ -37,23 +37,27 @@ if not durations_long[durations_long['duration_ms']<0].empty:
     # Option to filter them out if these are non-problematic exceptional occurrences
     # durations_long = durations_long.drop(durations_long[durations_long['duration_ms']<0].index)
 
-# Rename and reorder categories
-durations_long['trigger'] = durations_long['trigger'].map(TRIGGER_MAPPINGS)
-durations_long['trigger'] = pd.Categorical(durations_long['trigger'],
-                                            categories=TRIGGER_MAPPINGS.values(),
-                                            ordered=True)
-durations_long['provider'] = durations_long['provider'].map(PROVIDER_MAPPINGS)
-durations_long['provider'] = pd.Categorical(durations_long['provider'],
-                                            categories=PROVIDER_MAPPINGS.values(),
-                                            ordered=True)
-durations_long['duration_type'] = durations_long['duration_type'].map(DURATION_MAPPINGS)
-durations_long['duration_type'] = pd.Categorical(durations_long['duration_type'],
-                                            categories=DURATION_MAPPINGS.values(),
-                                            ordered=True)
+# Select trigger times
+trigger_latency = durations_long[durations_long['duration_type'] == 'trigger_time']
+
+# %% Rename and reorder categories
+df = trigger_latency.copy()
+df['trigger'] = df['trigger'].map(TRIGGER_MAPPINGS)
+df['trigger'] = pd.Categorical(df['trigger'],
+                                categories=TRIGGER_MAPPINGS.values(),
+                                ordered=True)
+df['provider'] = df['provider'].map(PROVIDER_MAPPINGS)
+df['provider'] = pd.Categorical(df['provider'],
+                                categories=PROVIDER_MAPPINGS.values(),
+                                ordered=True)
+df['duration_type'] = df['duration_type'].map(DURATION_MAPPINGS)
+df['duration_type'] = pd.Categorical(df['duration_type'],
+                                categories=DURATION_MAPPINGS.values(),
+                                ordered=True)
 
 # %% Plots
 p = (
-    ggplot(durations_long)
+    ggplot(df)
     + aes(x='duration_ms', color='trigger')
     + stat_ecdf(alpha=0.8)
     + facet_wrap('provider', scales = 'free_x', nrow=2)
