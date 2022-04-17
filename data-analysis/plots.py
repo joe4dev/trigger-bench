@@ -71,6 +71,13 @@ df_agg = df.groupby(['provider', 'trigger']).agg(
     p99_latency=('duration_ms', lambda x: x.quantile(0.99))
 )
 df_agg = df_agg.reset_index().dropna()
+# Write to CSV
+# df_agg.to_csv(f"{plots_path}/df_agg.csv")
+
+offset_path = script_dir / 'df_agg_offsets.csv'
+df_agg_offsets = pd.read_csv(offset_path)
+df_agg = pd.merge(df_agg, df_agg_offsets, on=['provider', 'trigger'], suffixes=('', '_offset'))
+
 def format_labels(breaks):
     return ["{:.0f}".format(l) for l in breaks]
 breakdown_colors = ['#fdb462','#80b1d3','#d9ffcf','#bebada','#ffffb3','#8dd3c7', '#fccde5','#b3de69']
@@ -86,7 +93,7 @@ p = (
     # TODO: Fix label placement:
     # a) Some custom x offset if there are not too many overlapping (should work for 2, harder with 3)
     # b) Outside of canvas: https://stackoverflow.com/questions/67625992/how-to-place-geom-text-labels-outside-the-plot-boundary-in-plotnine
-    + geom_text(df_agg, aes(label='p50_latency', x='p50_latency', y=0.5, color='trigger'), format_string='{:.0f}', show_legend=False, size=8)
+    + geom_text(df_agg, aes(label='p50_latency', x='p50_latency+x_offset', y='0.5+y_offset', color='trigger'), format_string='{:.0f}', show_legend=False, size=8)
     + facet_wrap('provider', nrow=2)  # scales = 'free_x'
     + scale_x_log10(labels=format_labels)
     # + xlim(0, 400)
@@ -94,7 +101,7 @@ p = (
     # + xlim(0, 5000)
     # + xlim(0, 10000)
     + scale_color_manual(custon_brewer_colors)
-    + labs(x='Latency (ms)', y="ECDF", color='Trigger')
+    + labs(x='Latency (ms)', y="Empirical Cumulative Distribution Function (ECDF)", color='Trigger')
     + theme_light(base_size=12)
     + theme(
         # subplots_adjust={'hspace': 0.5}
