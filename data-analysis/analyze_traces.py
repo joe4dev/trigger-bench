@@ -10,19 +10,10 @@ import logging
 import sys
 import yaml
 from sb.sb import Sb
+from data_importer import parse_provider
 
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
-
-
-def parse_provider(sb_config) -> str:
-    provider = sb_config['trigger_bench'].get('provider')
-    if provider and 'aws' in provider:
-        return 'aws'
-    elif provider and 'azure' in provider:
-        return 'azure'
-    else:
-        logging.error('Unsupported provider for trace analyzer')
 
 
 # Trigger-bench directory
@@ -43,6 +34,6 @@ for trace in traces:
         config_file = log_dir / 'sb_config.yml'
         with open(config_file) as file:
             sb_config = yaml.safe_load(file)
-            provider = parse_provider(sb_config)
+            provider = parse_provider(sb_config['trigger_bench'])
             logging.debug(f"{provider},{trace}")
             sb.analyze_traces(trace, provider)
