@@ -30,11 +30,18 @@ durations = calculate_durations(warm_traces)
 durations_long = pd.melt(durations, id_vars=['root_trace_id', 'child_trace_id', 'provider', 'trigger', 'label'], var_name='duration_type', value_vars=TIMEDELTA_COLS, value_name='duration')
 durations_long['duration_ms'] = durations_long['duration'].dt.total_seconds() * 1000
 
+# Check for negative timediffs
+if not durations_long[durations_long['duration_ms']<0].empty:
+    neg_durations = durations_long[durations_long['duration_ms']<0]
+    logging.warning(f"Found {len(neg_durations)} timediffs with negative duration. Check `neg_duration`!")
+    # Option to filter them out if these are non-problematic exceptional occurrences
+    # durations_long = durations_long.drop(durations_long[durations_long['duration_ms']<0].index)
+
 # Rename and reorder categories
 durations_long['trigger'] = durations_long['trigger'].map(TRIGGER_MAPPINGS)
 durations_long['trigger'] = pd.Categorical(durations_long['trigger'],
-                                                 categories=TRIGGER_MAPPINGS.values(),
-                                                 ordered=True)
+                                            categories=TRIGGER_MAPPINGS.values(),
+                                            ordered=True)
 durations_long['provider'] = durations_long['provider'].map(PROVIDER_MAPPINGS)
 durations_long['provider'] = pd.Categorical(durations_long['provider'],
                                             categories=PROVIDER_MAPPINGS.values(),
@@ -43,13 +50,6 @@ durations_long['duration_type'] = durations_long['duration_type'].map(DURATION_M
 durations_long['duration_type'] = pd.Categorical(durations_long['duration_type'],
                                             categories=DURATION_MAPPINGS.values(),
                                             ordered=True)
-
-# Remove negative timediffs
-# TODO: Print warning if this happens
-durations_long = durations_long.drop(durations_long[durations_long['duration_ms']<0].index)
-
-# durations_long_filtered = durations_long.loc[~durations_long.groupby(['provider', 'workload_type', 'duration_type'])['duration_ms'].apply(is_outlier), :].reset_index(drop=True)
-durations_long_filtered = durations_long
 
 # %% Plots
 p = (
