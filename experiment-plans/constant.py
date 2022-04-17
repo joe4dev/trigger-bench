@@ -33,11 +33,7 @@ supported_triggers = {
 logging.info(f"Using provider {PROVIDER}.")
 triggers = supported_triggers['aws'] if PROVIDER == 'aws' else supported_triggers['azure']
 
-# Initialize sb SDK
-sb = Sb(trigger_bench, log_level='DEBUG', debug=True)
-
-
-# k6 workload
+# k6 workload: https://k6.io/docs/using-k6/scenarios/executors/constant-arrival-rate/
 options = {
     "scenarios": {
         "constant": {
@@ -51,6 +47,9 @@ options = {
     }
 }
 
+# Initialize sb SDK
+sb = Sb(trigger_bench, log_level='DEBUG', debug=True)
+
 # Test all triggers in succession
 MINUTE = 60
 for trigger in triggers:
@@ -60,6 +59,9 @@ for trigger in triggers:
     sb.prepare()
     sb.wait(1 * MINUTE)
     sb.invoke('custom', workload_options=options)
+    # Wait until traces are recorded and processed by the tracing infrastructure.
+    # * AWS X-Ray tends to be ready within 1-2 minutes for small bursts
+    # * Azure Insights can take over 5-10 minutes until the traces appear
     sb.wait(10 * MINUTE)
     sb.get_traces()
     # Save bandwidth by analyzing after downloading from the cloud host
