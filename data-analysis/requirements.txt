@@ -28,7 +28,6 @@ pexpect==4.8.0
 pickleshare==0.7.5
 Pillow==9.1.0
 plotnine==0.8.0
-plydata==0.4.3
 prompt-toolkit==3.0.29
 psutil==5.9.0
 ptyprocess==0.7.0

@@ -6,7 +6,6 @@ Generates all plots by loading and analyzing all executions
 import sys
 from data_importer import *
 from plotnine import *
-from plydata import *
 
 
 # Configure logging
@@ -58,24 +57,18 @@ df['duration_type'] = pd.Categorical(df['duration_type'],
                                 ordered=True)
 
 # %% Plots
-# Attempt#1 with plydata: grouping with multiple cols didn't work out
-# df_agg = (
-#     df
-#     >> group_by(['provider', 'trigger'])
-#     >> summarise(duration_p50='median(duration_ms)')
-# )
-# Aggregate for relative plot
-df_agg2 = df.groupby(['provider', 'trigger']).agg(
+# Aggregate for annotating summary stats
+df_agg = df.groupby(['provider', 'trigger']).agg(
     mean_latency=('duration_ms', lambda x: x.mean()),
     p50_latency=('duration_ms', lambda x: x.quantile(0.5)),
     p99_latency=('duration_ms', lambda x: x.quantile(0.99))
 )
-df_agg2 = df_agg2.reset_index().dropna()
+df_agg = df_agg.reset_index().dropna()
 p = (
     ggplot(df)
     + aes(x='duration_ms', color='trigger')
     + stat_ecdf(alpha=0.8)
-    + geom_vline(df_agg2, aes(xintercept='p50_latency', color='trigger'), linetype='dotted')
+    + geom_vline(df_agg, aes(xintercept='p50_latency', color='trigger'), linetype='dotted')
     + facet_wrap('provider', nrow=2)  # scales = 'free_x'
     + xlim(0, 400)
     + theme(
