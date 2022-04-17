@@ -6,6 +6,7 @@ Generates all plots by loading and analyzing all executions
 import sys
 from data_importer import *
 from plotnine import *
+from mizani.palettes import hls_palette, husl_palette, hue_pal, gradient_n_pal, cmap_pal, cubehelix_pal, brewer_pal
 
 
 # Configure logging
@@ -72,10 +73,13 @@ df_agg = df.groupby(['provider', 'trigger']).agg(
 df_agg = df_agg.reset_index().dropna()
 def format_labels(breaks):
     return ["{:.0f}".format(l) for l in breaks]
+breakdown_colors = ['#fdb462','#80b1d3','#d9ffcf','#bebada','#ffffb3','#8dd3c7', '#fccde5','#b3de69']
+linda_colors = ['#D9B466','#EBD9B2','#AED9D6','#5BB4AC','#9A609A','#5B507A', '#74A1CF','#083D77']
+custon_brewer_colors = brewer_pal(type='qual', palette=2, direction=1)(8)
 p = (
     ggplot(df)
     + aes(x='duration_ms', color='trigger', fill='trigger')
-    + stat_ecdf(alpha=0.8)
+    + stat_ecdf(alpha=0.9)
     # Density plot is hard to tune for visually well-perceivable results
     # + geom_density(aes(y=after_stat('count')),alpha=0.1)
     + geom_vline(df_agg, aes(xintercept='p50_latency', color='trigger'), linetype='dotted', show_legend=False, alpha=0.5)
@@ -89,9 +93,11 @@ p = (
     # + xlim(0, 2000)
     # + xlim(0, 5000)
     # + xlim(0, 10000)
-    # TODO: Fix color scheme
+    + scale_color_manual(custon_brewer_colors)
+    + labs(x='Latency (ms)', y="ECDF", color='Trigger')
+    + theme_light(base_size=12)
     + theme(
-        subplots_adjust={'hspace': 0.55, 'wspace': 0.02}
+        # subplots_adjust={'hspace': 0.5}
     )
 )
 p.save(path=f"{plots_path}", filename=f"trigger_latency.pdf")
