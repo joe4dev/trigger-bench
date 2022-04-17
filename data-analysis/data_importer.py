@@ -46,11 +46,16 @@ TIMEDELTA_COLS = [
     *[f"{col1}{col2}" for col1, col2 in pairwise(EXTRA_TIMESTAMPS)],
 ]
 
-# workload_type
+TRIGGER_MAPPINGS = {
+    'http': 'HTTP',
+    'queue': 'Queue',
+    'storage': 'Storage'
+}
+
 LABEL_MAPPINGS = {
-    'all_triggers_http': 'HTTP',
-    'all_triggers_storage': 'Storage',
-    'all_triggers_queue': 'Queue',
+    'constant_http': 'HTTP',
+    'constant_storage': 'Storage',
+    'constant_queue': 'Queue',
 }
 
 PROVIDER_MAPPINGS = {

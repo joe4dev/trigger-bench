@@ -31,11 +31,10 @@ durations_long = pd.melt(durations, id_vars=['root_trace_id', 'child_trace_id', 
 durations_long['duration_ms'] = durations_long['duration'].dt.total_seconds() * 1000
 
 # Rename and reorder categories
-# TODO: remap triggers
-# durations_long['workload_type'] = durations_long['label'].map(label_mappings)
-# durations_long['workload_type'] = pd.Categorical(durations_long['workload_type'],
-#                                                  categories=label_mappings.values(),
-#                                                  ordered=True)
+durations_long['trigger'] = durations_long['trigger'].map(TRIGGER_MAPPINGS)
+durations_long['trigger'] = pd.Categorical(durations_long['trigger'],
+                                                 categories=TRIGGER_MAPPINGS.values(),
+                                                 ordered=True)
 durations_long['provider'] = durations_long['provider'].map(PROVIDER_MAPPINGS)
 durations_long['provider'] = pd.Categorical(durations_long['provider'],
                                             categories=PROVIDER_MAPPINGS.values(),
@@ -49,23 +48,13 @@ durations_long['duration_type'] = pd.Categorical(durations_long['duration_type']
 # TODO: Print warning if this happens
 durations_long = durations_long.drop(durations_long[durations_long['duration_ms']<0].index)
 
-# Clip data because catplot doesn't support dynamic limits
-# and the tail is too long to be shown.
-# Important: Disclose if using this.
-# Based on StackOverflow: https://stackoverflow.com/a/54356494
-def is_outlier(s):
-    lower_limit = s.min()
-    # upper_limit = s.quantile(.95)
-    upper_limit = s.median() + 3 * s.std()
-    return ~s.between(lower_limit, upper_limit)
-
 # durations_long_filtered = durations_long.loc[~durations_long.groupby(['provider', 'workload_type', 'duration_type'])['duration_ms'].apply(is_outlier), :].reset_index(drop=True)
 durations_long_filtered = durations_long
 
 # %% Plots
 p = (
     ggplot(durations_long)
-    + aes(x='duration_ms', color='label')
+    + aes(x='duration_ms', color='trigger')
     + stat_ecdf(alpha=0.8)
     + facet_wrap('provider', scales = 'free_x', nrow=2)
     + theme(
@@ -73,3 +62,5 @@ p = (
     )
 )
 p.save(path=f"{plots_path}", filename=f"trigger_latency.pdf")
+
+# %%
