@@ -47,7 +47,7 @@ def k6_options(burst_size):
     num_bursts = round(num_target_samples / burst_size)
     options = {
         "scenarios":{
-            f"burst_{burst+1} ": {
+            f"burst_{burst+1}": {
                 "executor": "per-vu-iterations",
                 "vus": burst_size,
                 "iterations": 1,
