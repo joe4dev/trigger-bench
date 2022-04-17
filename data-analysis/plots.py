@@ -40,6 +40,7 @@ if not durations_long[durations_long['duration_ms']<0].empty:
 
 # Select trigger times
 trigger_latency = durations_long[durations_long['duration_type'] == 'trigger_time']
+# trigger_latency = trigger_latency[trigger_latency['trigger'] != 'storage']
 
 # %% Rename and reorder categories
 df = trigger_latency.copy()
@@ -66,15 +67,20 @@ df_agg = df.groupby(['provider', 'trigger']).agg(
 df_agg = df_agg.reset_index().dropna()
 p = (
     ggplot(df)
-    + aes(x='duration_ms', color='trigger')
+    + aes(x='duration_ms', color='trigger', fill='trigger')
     + stat_ecdf(alpha=0.8)
-    + geom_vline(df_agg, aes(xintercept='p50_latency', color='trigger'), linetype='dotted')
+    # Density plot is hard to tune for visually well-perceivable results
+    # + geom_density(aes(y=after_stat('count')),alpha=0.1)
+    + geom_vline(df_agg, aes(xintercept='p50_latency', color='trigger'), linetype='dotted', show_legend=False,)
     # TODO: Fix label placement:
     # a) Some custom x offset if there are not too many overlapping (should work for 2, harder with 3)
     # b) Outside of canvas: https://stackoverflow.com/questions/67625992/how-to-place-geom-text-labels-outside-the-plot-boundary-in-plotnine
     + geom_text(df_agg, aes(label='p50_latency', x='p50_latency', y=0.8, color='trigger'), format_string='{:.0f}', show_legend=False, size=8)
     + facet_wrap('provider', nrow=2)  # scales = 'free_x'
-    + xlim(0, 400)
+    # + xlim(0, 400)
+    # + xlim(0, 2000)
+    # + xlim(0, 5000)
+    # + xlim(0, 10000)
     + theme(
         subplots_adjust={'hspace': 0.55, 'wspace': 0.02}
     )
