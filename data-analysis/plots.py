@@ -69,6 +69,10 @@ p = (
     + aes(x='duration_ms', color='trigger')
     + stat_ecdf(alpha=0.8)
     + geom_vline(df_agg, aes(xintercept='p50_latency', color='trigger'), linetype='dotted')
+    # TODO: Fix label placement:
+    # a) Some custom x offset if there are not too many overlapping (should work for 2, harder with 3)
+    # b) Outside of canvas: https://stackoverflow.com/questions/67625992/how-to-place-geom-text-labels-outside-the-plot-boundary-in-plotnine
+    + geom_text(df_agg, aes(label='p50_latency', x='p50_latency', y=0.8, color='trigger'), format_string='{:.0f}', show_legend=False, size=8)
     + facet_wrap('provider', nrow=2)  # scales = 'free_x'
     + xlim(0, 400)
     + theme(
