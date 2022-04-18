@@ -108,6 +108,9 @@ p = (
     + labs(x='Latency (ms)', y="Empirical Cumulative Distribution Function (ECDF)", color='Trigger')
     + theme_light(base_size=12)
     + theme(
+        legend_position='top',
+        legend_direction='horizontal'
+        # legend_position(theme_element='top')
         # subplots_adjust={'hspace': 0.5}
     )
 )
