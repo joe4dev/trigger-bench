@@ -26,7 +26,7 @@ The CosmosDB database trigger requires a custom configuration (see [function.jso
 
 Further, we customize the delay in milliseconds in between polling a partition for new changes on the feed as follows:
 
-* `feedPollDelay=10` (default is 5000ms)
+* `feedPollDelay=1` (default is 5000ms)
 
 Some of these configuration options are not available in the Pulumi Azure Classic provider (e.g., see [PR in Pulumi](https://github.com/pulumi/pulumi-azure/pull/1052)) and therefore we implemented a workaround (see [Henrik's fix](https://github.com/henriklagergren/azure-triggers-study/commit/b8a14980636c4584a1dbd98d584f6a3f3eae46fa)) using the Azure Function Tools (func) to deploy the function app.
 

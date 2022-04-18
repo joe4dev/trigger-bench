@@ -5,6 +5,7 @@ Generates all plots by loading and analyzing all executions
 # %% Imports
 import sys
 from pathlib import Path
+import numpy as np
 from data_importer import *
 from plotnine import *
 from mizani.palettes import brewer_pal
@@ -72,7 +73,8 @@ df['duration_type'] = pd.Categorical(df['duration_type'],
 df_agg = df.groupby(['provider', 'trigger']).agg(
     mean_latency=('duration_ms', lambda x: x.mean()),
     p50_latency=('duration_ms', lambda x: x.quantile(0.5)),
-    p99_latency=('duration_ms', lambda x: x.quantile(0.99))
+    p99_latency=('duration_ms', lambda x: x.quantile(0.99)),
+    cv_latency=('duration_ms', lambda x: np.std(x, ddof=1) / np.mean(x) * 100 )
 )
 df_agg = df_agg.reset_index().dropna()
 # Write to CSV
@@ -121,7 +123,7 @@ p = (
     ggplot(burst_df)
     + aes(x='duration_ms', color='burst_size')
     + stat_ecdf(alpha=0.8)
-    + facet_wrap('~ provider + trigger', scales = 'free_x', nrow=2)
+    + facet_wrap('~ provider + trigger', scales = 'free_x', ncol=3)
     # + scale_x_log10(labels=format_labels)
     # + xlim(0, 400)
     # + xlim(0, 2000)
@@ -129,6 +131,7 @@ p = (
     # + xlim(0, 10000)
     # TODO: Fix color scheme
     + theme(
+        figure_size=(7, 7),
         subplots_adjust={'hspace': 0.55, 'wspace': 0.02}
     )
 )
