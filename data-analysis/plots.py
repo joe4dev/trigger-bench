@@ -49,6 +49,7 @@ if not durations_long[durations_long['duration_ms']<0].empty:
 trigger_latency = durations_long[(durations_long['label'].str.startswith('constant_1rps_60min')) & (durations_long['duration_type'] == 'trigger_time')]
 # trigger_latency = trigger_latency[trigger_latency['trigger'] != 'storage']
 
+service_df = durations_long[(durations_long['label'].str.startswith('constant_1rps_60min')) & (durations_long['duration_type'] == 'service_time')]
 # TODO: Add baseline as burst size 1
 burst_df = durations_long[(durations_long['label'].str.startswith('bursty_3000_invocations')) & (durations_long['duration_type'] == 'trigger_time')]
 
@@ -71,9 +72,14 @@ df['duration_type'] = pd.Categorical(df['duration_type'],
 # %% Trigger latency plot for Azure
 # Aggregate for annotating summary stats
 df_agg = df.groupby(['provider', 'trigger']).agg(
+    count_latency=('duration_ms', lambda x: x.count()),
+    min_latency=('duration_ms', lambda x: x.min()),
     mean_latency=('duration_ms', lambda x: x.mean()),
     p50_latency=('duration_ms', lambda x: x.quantile(0.5)),
+    p75_latency=('duration_ms', lambda x: x.quantile(0.75)),
+    p95_latency=('duration_ms', lambda x: x.quantile(0.95)),
     p99_latency=('duration_ms', lambda x: x.quantile(0.99)),
+    max_latency=('duration_ms', lambda x: x.max()),
     cv_latency=('duration_ms', lambda x: np.std(x, ddof=1) / np.mean(x) * 100 )
 )
 df_agg = df_agg.reset_index().dropna()
@@ -107,7 +113,7 @@ p = (
     # + xlim(0, 5000)
     # + xlim(0, 10000)
     + scale_color_manual(custon_brewer_colors)
-    + labs(x='Latency (ms)', y="Empirical Cumulative Distribution Function (ECDF)", color='Trigger')
+    + labs(x='Trigger Latency (ms)', y="Empirical Cumulative Distribution Function (ECDF)", color='Trigger')
     + theme_light(base_size=12)
     + theme(
         legend_position='top',
@@ -117,6 +123,36 @@ p = (
     )
 )
 p.save(path=f"{plots_path}", filename=f"trigger_latency.pdf")
+
+# %% Service call latency plot
+p = (
+    ggplot(service_df)
+    + aes(x='duration_ms', color='trigger', fill='trigger')
+    + stat_ecdf(alpha=0.9)
+    # Density plot is hard to tune for visually well-perceivable results
+    # + geom_density(aes(y=after_stat('count')),alpha=0.1)
+    # + geom_vline(df_agg, aes(xintercept='p50_latency', color='trigger'), linetype='dotted', show_legend=False, alpha=0.5)
+    # TODO: Fix label placement:
+    # a) Some custom x offset if there are not too many overlapping (should work for 2, harder with 3)
+    # b) Outside of canvas: https://stackoverflow.com/questions/67625992/how-to-place-geom-text-labels-outside-the-plot-boundary-in-plotnine
+    # + geom_text(df_agg, aes(label='p50_latency', x='p50_latency+x_offset', y='0.5+y_offset', color='trigger'), format_string='{:.0f}', show_legend=False, size=8)
+    + facet_wrap('provider', nrow=2)  # scales = 'free_x'
+    + scale_x_log10(labels=format_labels)
+    # + xlim(0, 400)
+    # + xlim(0, 2000)
+    # + xlim(0, 5000)
+    # + xlim(0, 10000)
+    + scale_color_manual(custon_brewer_colors)
+    + labs(x='Service Response Time (ms)', y="Empirical Cumulative Distribution Function (ECDF)", color='Trigger')
+    + theme_light(base_size=12)
+    + theme(
+        legend_position='top',
+        legend_direction='horizontal'
+        # legend_position(theme_element='top')
+        # subplots_adjust={'hspace': 0.5}
+    )
+)
+p.save(path=f"{plots_path}", filename=f"service_latency.pdf")
 
 # %% Trigger latency plot for different burst sizes
 p = (
