@@ -49,9 +49,9 @@ TRIGGER_MAPPINGS = {
     'queue': 'Queue',
     'storage': 'Storage',
     'database': 'Database',
-    'serviceBus': 'Service Bus',
-    'eventHub': 'Event Hub',
-    'eventGrid': 'Event Grid',
+    'serviceBus': 'Message',
+    'eventHub': 'Stream',
+    'eventGrid': 'Event',
     'timer': 'Timer'
 }
 
