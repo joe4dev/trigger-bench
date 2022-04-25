@@ -93,8 +93,12 @@ df_agg = pd.merge(df_agg, df_agg_offsets, on=['provider', 'trigger'], suffixes=(
 def format_labels(breaks):
     return ["{:.0f}".format(l) for l in breaks]
 breakdown_colors = ['#fdb462','#80b1d3','#d9ffcf','#bebada','#ffffb3','#8dd3c7', '#fccde5','#b3de69']
-linda_colors = ['#D9B466','#EBD9B2','#AED9D6','#5BB4AC','#9A609A','#5B507A', '#74A1CF','#083D77']
-custon_brewer_colors = brewer_pal(type='qual', palette=2, direction=1)(8)
+
+brewer_colors = brewer_pal(type='qual', palette=2, direction=1)(8)
+brewer_colors_list = ['#1B9E77', '#D95F02', '#7570B3', '#E7298A', '#66A61E', '#E6AB02', '#A6761D', '#666666']
+# https://coolors.co/1b9e77-7570b3-e7298a-66a61e-e6ab02-d95f02-09adbb-2e2e2e
+brewer_colors_custom = ['#1B9E77', '#D95F02', '#7570B3', '#E7298A', '#66A61E', '#E6AB02', '#09ADBB', '#2E2E2E']
+trigger_colors = brewer_colors_custom
 p = (
     ggplot(df)
     + aes(x='duration_ms', color='trigger', fill='trigger')
@@ -102,7 +106,6 @@ p = (
     # Density plot is hard to tune for visually well-perceivable results
     # + geom_density(aes(y=after_stat('count')),alpha=0.1)
     + geom_vline(df_agg, aes(xintercept='p50_latency', color='trigger'), linetype='dotted', show_legend=False, alpha=0.5)
-    # TODO: Fix label placement:
     # a) Some custom x offset if there are not too many overlapping (should work for 2, harder with 3)
     # b) Outside of canvas: https://stackoverflow.com/questions/67625992/how-to-place-geom-text-labels-outside-the-plot-boundary-in-plotnine
     + geom_text(df_agg, aes(label='p50_latency', x='p50_latency+x_offset', y='0.5+y_offset', color='trigger'), format_string='{:.0f}', show_legend=False, size=10)
@@ -112,12 +115,13 @@ p = (
     # + xlim(0, 2000)
     # + xlim(0, 5000)
     # + xlim(0, 10000)
-    + scale_color_manual(custon_brewer_colors)
-    + labs(x='Trigger Latency (ms)', y="Empirical Cumulative Distribution Function (ECDF)", color='Trigger')
+    + scale_color_manual(trigger_colors)
+    + labs(x='Trigger Latency (ms)', y="Empirical Cumulative Distribution Function (ECDF)", color='Trigger Type')
     + theme_light(base_size=12)
     + theme(
         legend_position='top',
-        legend_direction='horizontal'
+        legend_direction='horizontal',
+        legend_title_align='center'
         # legend_position(theme_element='top')
         # subplots_adjust={'hspace': 0.5}
     )
@@ -132,7 +136,6 @@ p = (
     # Density plot is hard to tune for visually well-perceivable results
     # + geom_density(aes(y=after_stat('count')),alpha=0.1)
     # + geom_vline(df_agg, aes(xintercept='p50_latency', color='trigger'), linetype='dotted', show_legend=False, alpha=0.5)
-    # TODO: Fix label placement:
     # a) Some custom x offset if there are not too many overlapping (should work for 2, harder with 3)
     # b) Outside of canvas: https://stackoverflow.com/questions/67625992/how-to-place-geom-text-labels-outside-the-plot-boundary-in-plotnine
     # + geom_text(df_agg, aes(label='p50_latency', x='p50_latency+x_offset', y='0.5+y_offset', color='trigger'), format_string='{:.0f}', show_legend=False, size=8)
@@ -142,8 +145,8 @@ p = (
     # + xlim(0, 2000)
     # + xlim(0, 5000)
     # + xlim(0, 10000)
-    + scale_color_manual(custon_brewer_colors)
-    + labs(x='Service Response Time (ms)', y="Empirical Cumulative Distribution Function (ECDF)", color='Trigger')
+    + scale_color_manual(trigger_colors)
+    + labs(x='Service Response Time (ms)', y="Empirical Cumulative Distribution Function (ECDF)", color='Trigger Type')
     + theme_light(base_size=12)
     + theme(
         legend_position='top',
