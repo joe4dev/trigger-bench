@@ -1,5 +1,27 @@
 # Load Generator
 
+## Requirements
+
+* Decent CPU such that the load generator does not become a bottleneck (using 4 cores)
+* Decent network connectivity for load generation
+* Enough storage for performance logs (depends on experiment)
+
+## TriggerBench Specifications
+
+### AWS
+
+* Region: `us-east-1`
+* Instance Type: `t3.xlarge`
+  * Price: `$0.166400 per hour`
+  * [Specification](https://instances.vantage.sh/?selected=t3.large,t3.xlarge)
+
+### Azure
+
+* Region: `eastus`
+* Instance Type: `B4ms`
+  * Price: `$0.166 per hour`
+  * [Specification](https://azure.microsoft.com/en-us/pricing/details/virtual-machines/linux/#pricing)
+
 ## AWS Setup
 
 These instructions guide how to setup sb on an EC2 instance.
