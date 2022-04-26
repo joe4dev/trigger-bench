@@ -15,7 +15,7 @@ from mizani.palettes import brewer_pal
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 # Optionally overwrite plots path optionally configurable through PLOTS_PATH
-plots_path = Path('/Users/joe/Documents/Papers/tex22-trigger-bench-ic2e22/plots')
+# plots_path = Path('/Users/joe/Documents/Papers/tex22-trigger-bench-ic2e22/plots')
 
 # %% Load data
 execution_paths = find_execution_paths(data_path)
@@ -49,9 +49,6 @@ if not durations_long[durations_long['duration_ms']<0].empty:
 trigger_latency = durations_long[(durations_long['label'].str.startswith('constant_1rps_60min')) & (durations_long['duration_type'] == 'trigger_time')]
 # trigger_latency = trigger_latency[trigger_latency['trigger'] != 'storage']
 
-service_df = durations_long[(durations_long['label'].str.startswith('constant_1rps_60min')) & (durations_long['duration_type'] == 'service_time')]
-# TODO: Add baseline as burst size 1
-burst_df = durations_long[(durations_long['label'].str.startswith('bursty_3000_invocations')) & (durations_long['duration_type'] == 'trigger_time')]
 
 # %% Rename and reorder categories
 df = trigger_latency.copy()
@@ -127,53 +124,3 @@ p = (
     )
 )
 p.save(path=f"{plots_path}", filename=f"trigger_latency.pdf")
-
-# %% Service call latency plot
-p = (
-    ggplot(service_df)
-    + aes(x='duration_ms', color='trigger', fill='trigger')
-    + stat_ecdf(alpha=0.9)
-    # Density plot is hard to tune for visually well-perceivable results
-    # + geom_density(aes(y=after_stat('count')),alpha=0.1)
-    # + geom_vline(df_agg, aes(xintercept='p50_latency', color='trigger'), linetype='dotted', show_legend=False, alpha=0.5)
-    # a) Some custom x offset if there are not too many overlapping (should work for 2, harder with 3)
-    # b) Outside of canvas: https://stackoverflow.com/questions/67625992/how-to-place-geom-text-labels-outside-the-plot-boundary-in-plotnine
-    # + geom_text(df_agg, aes(label='p50_latency', x='p50_latency+x_offset', y='0.5+y_offset', color='trigger'), format_string='{:.0f}', show_legend=False, size=8)
-    + facet_wrap('provider', nrow=2)  # scales = 'free_x'
-    + scale_x_log10(labels=format_labels)
-    # + xlim(0, 400)
-    # + xlim(0, 2000)
-    # + xlim(0, 5000)
-    # + xlim(0, 10000)
-    + scale_color_manual(trigger_colors)
-    + labs(x='Service Response Time (ms)', y="Empirical Cumulative Distribution Function (ECDF)", color='Trigger Type')
-    + theme_light(base_size=12)
-    + theme(
-        legend_position='top',
-        legend_direction='horizontal'
-        # legend_position(theme_element='top')
-        # subplots_adjust={'hspace': 0.5}
-    )
-)
-p.save(path=f"{plots_path}", filename=f"service_latency.pdf")
-
-# %% Trigger latency plot for different burst sizes
-p = (
-    ggplot(burst_df)
-    + aes(x='duration_ms', color='burst_size')
-    + stat_ecdf(alpha=0.8)
-    + facet_wrap('~ provider + trigger', scales = 'free_x', ncol=3)
-    # + scale_x_log10(labels=format_labels)
-    # + xlim(0, 400)
-    # + xlim(0, 2000)
-    # + xlim(0, 5000)
-    # + xlim(0, 10000)
-    # TODO: Fix color scheme
-    + theme(
-        figure_size=(7, 7),
-        subplots_adjust={'hspace': 0.55, 'wspace': 0.02}
-    )
-)
-p.save(path=f"{plots_path}", filename=f"trigger_latency_by_burst_size.pdf")
-
-# %%
