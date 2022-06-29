@@ -91,6 +91,35 @@ def format_labels(breaks):
     return ["{:.0f}".format(l) for l in breaks]
 breakdown_colors = ['#fdb462','#80b1d3','#d9ffcf','#bebada','#ffffb3','#8dd3c7', '#fccde5','#b3de69']
 
+# Plotnine linestyles can be parametrized through Matplotlib:
+# * Matplotlib linestyle examples: https://matplotlib.org/stable/gallery/lines_bars_and_markers/linestyles.html
+# * Matplotlib API: https://matplotlib.org/stable/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D.set_linestyle
+# * Plotnine API: https://plotnine.readthedocs.io/en/stable/generated/plotnine.scales.scale_linetype_manual.html
+# * Plotnine example: https://github.com/has2k1/plotnine/issues/352
+# * Fix legend for error in ggplot "Cannot generate legend for the 'linetype' aesthetic. Make sure you have mapped a variable to it"
+#   https://stackoverflow.com/questions/40589494/error-when-trying-to-build-linetype-legend-manually-in-ggplot
+
+# NOTE: The mapping is implicitly defined based on the order
+# 8 linestyles are required to cover the 8 Azure + 3 AWS trigger types
+linestyles = (
+    # HTTP: solid
+    (0, ()),
+    # Queue: dotted
+    (0, (1, 1)),
+    # Storage: dashed
+    (0, (5, 5)),
+    # Database: dashdotted
+    (0, (3, 5, 1, 5)),
+    # Service Bus: dashdotted
+    (0, (3, 5, 1, 5, 1, 5)),
+    # Event Hub: solid
+    (0, ()),
+    # Event Grid: dashed
+    (0, (5, 5)),
+    # Time: dotted
+    (0, (1, 1)),
+)
+
 brewer_colors = brewer_pal(type='qual', palette=2, direction=1)(8)
 brewer_colors_list = ['#1B9E77', '#D95F02', '#7570B3', '#E7298A', '#66A61E', '#E6AB02', '#A6761D', '#666666']
 # https://coolors.co/1b9e77-7570b3-e7298a-66a61e-e6ab02-d95f02-09adbb-2e2e2e
@@ -99,7 +128,8 @@ trigger_colors = brewer_colors_custom
 p = (
     ggplot(df)
     + aes(x='duration_ms', color='trigger', fill='trigger')
-    + stat_ecdf(alpha=0.9)
+    + stat_ecdf(aes(linetype='trigger'), alpha=0.9)
+    + scale_linetype_manual(linestyles)
     # Density plot is hard to tune for visually well-perceivable results
     # + geom_density(aes(y=after_stat('count')),alpha=0.1)
     + geom_vline(df_agg, aes(xintercept='p50_latency', color='trigger'), linetype='dotted', show_legend=False, alpha=0.5)
@@ -113,7 +143,7 @@ p = (
     # + xlim(0, 5000)
     # + xlim(0, 10000)
     + scale_color_manual(trigger_colors)
-    + labs(x='Trigger Latency (ms)', y="Empirical Cumulative Distribution Function (ECDF)", color='Trigger Type')
+    + labs(x='Trigger Latency (ms)', y="Empirical Cumulative Distribution Function (ECDF)", color='Trigger Type', linetype='Trigger Type')
     + theme_light(base_size=12)
     + theme(
         legend_position='top',
