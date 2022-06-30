@@ -38,6 +38,7 @@ durations = calculate_durations(warm_traces)
 durations_long = pd.melt(durations, id_vars=['root_trace_id', 'child_trace_id', 'provider', 'trigger', 'burst_size', 'label'], var_name='duration_type', value_vars=TIMEDELTA_COLS, value_name='duration')
 durations_long['duration_ms'] = durations_long['duration'].dt.total_seconds() * 1000
 
+neg_durations = None
 # Check for negative timediffs
 if not durations_long[durations_long['duration_ms']<0].empty:
     neg_durations = durations_long[durations_long['duration_ms']<0]
