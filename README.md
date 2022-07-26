@@ -77,6 +77,6 @@ This generates a new dataset in the same format as described above.
 The initial trigger implementations for AWS and Azure are based on two master thesis projects at Chalmers University of Technology in Sweden supervised by Joel:
 
 * AWS + Azure: **[Performance Comparison of Function-as- a-Service Triggers: A Cross-Platform Performance Study of Function Triggers in Function-as-a-Service](https://odr.chalmers.se/handle/20.500.12380/302822)** by Marcus Bertilsson and Oskar Grönqvist, 2021.
-* Azure Extension: **Serverless Function Triggers in Azure: An Analysis of Latency and Reliability** by Henrik Lagergren and Henrik Tao, 2022.
+* Azure Extension: **[Serverless Function Triggers in Azure: An Analysis of Latency and Reliability](https://odr.chalmers.se/handle/20.500.12380/305138)** by Henrik Lagergren and Henrik Tao, 2022.
 
 Joel contributed many improvements to their original source code as documented in the import commits [a00b67a](https://github.com/joe4dev/trigger-bench/commit/a00b67a1dd8476ca77d026e59adf2674c7807e68) and [6d2f5ef](https://github.com/joe4dev/trigger-bench/commit/6d2f5ef8bda0596b3f295cb6c6cbeba212c6ef43) and developed TriggerBench as integrated benchmark suite (see commit history for detailed changelog).
