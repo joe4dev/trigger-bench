@@ -88,6 +88,10 @@ offset_path = script_dir / 'df_agg_offsets.csv'
 df_agg_offsets = pd.read_csv(offset_path)
 df_agg = pd.merge(df_agg, df_agg_offsets, on=['provider', 'trigger'], suffixes=('', '_offset'))
 
+df_split = pd.merge(df, df_agg_offsets, on=['provider', 'trigger'], suffixes=('', '_offset'))
+df_split['trigger'] = df_split['trigger'].astype('category')
+df_split['trigger'].cat.reorder_categories(TRIGGER_MAPPINGS.values(), inplace=True)
+
 def format_labels(breaks):
     return ["{:.0f}".format(l) for l in breaks]
 breakdown_colors = ['#fdb462','#80b1d3','#d9ffcf','#bebada','#ffffb3','#8dd3c7', '#fccde5','#b3de69']
@@ -105,31 +109,49 @@ breakdown_colors = ['#fdb462','#80b1d3','#d9ffcf','#bebada','#ffffb3','#8dd3c7',
 linestyles = (
     # HTTP: solid
     (0, ()),
+    # Timer: dotted
+    (0, (1, 1)),
     # Queue: dotted
     (0, (1, 1)),
-    # Storage: dashed
-    (0, (5, 5)),
     # Database: dashdotted
     (0, (3, 5, 1, 5)),
-    # Service Bus: dashdotted
-    (0, (3, 5, 1, 5, 1, 5)),
-    # Event Hub: solid
-    (0, ()),
-    # Event Grid: dashed
+    # Storage: dashed
     (0, (5, 5)),
-    # Time: dotted
-    (0, (1, 1)),
+    # Stream (Event Hub): solid
+    (0, ()),
+    # Message (Service Bus): dashdotted
+    (0, (3, 5, 1, 5, 1, 5)),
+    # Event (Event Grid): dashed
+    (0, (5, 5)),
 )
 
 brewer_colors = brewer_pal(type='qual', palette=2, direction=1)(8)
 brewer_colors_list = ['#1B9E77', '#D95F02', '#7570B3', '#E7298A', '#66A61E', '#E6AB02', '#A6761D', '#666666']
 # https://coolors.co/1b9e77-7570b3-e7298a-66a61e-e6ab02-d95f02-09adbb-2e2e2e
-brewer_colors_custom = ['#1B9E77', '#D95F02', '#7570B3', '#E7298A', '#66A61E', '#E6AB02', '#09ADBB', '#2E2E2E']
+# Color description based on https://www.colorhexa.com
+brewer_colors_custom = [
+    # HTTP: Dark cyan - lime green
+    '#1B9E77',
+    # Timer: Very dark gray (mostly black)
+    '#2E2E2E',
+    # Queue: Vivid orange
+    '#D95F02',
+    # Database: Bright pink
+    '#E7298A',
+    # Storage: Slightly desaturated blue.
+    '#7570B3',
+    # Stream: Vivid orange (lighter)
+    '#E6AB02',
+    # Message: Dark green.
+    '#66A61E',
+    # Event: Strong cyan
+    '#09ADBB',
+]
 trigger_colors = brewer_colors_custom
 p = (
-    ggplot(df)
+    ggplot(df_split)
     + aes(x='duration_ms', color='trigger', fill='trigger')
-    + stat_ecdf(aes(linetype='trigger'), alpha=0.9)
+    + stat_ecdf(aes(linetype='trigger'), alpha=0.9, size=0.7)
     + scale_linetype_manual(linestyles)
     # Density plot is hard to tune for visually well-perceivable results
     # + geom_density(aes(y=after_stat('count')),alpha=0.1)
@@ -137,7 +159,7 @@ p = (
     # a) Some custom x offset if there are not too many overlapping (should work for 2, harder with 3)
     # b) Outside of canvas: https://stackoverflow.com/questions/67625992/how-to-place-geom-text-labels-outside-the-plot-boundary-in-plotnine
     + geom_text(df_agg, aes(label='p50_latency', x='p50_latency+x_offset', y='0.5+y_offset', color='trigger'), format_string='{:.0f}', show_legend=False, size=10)
-    + facet_wrap('provider', nrow=2)  # scales = 'free_x'
+    + facet_wrap('provider_split', nrow=3)  # scales = 'free_x'
     + scale_x_log10(labels=format_labels)
     # + xlim(0, 400)
     # + xlim(0, 2000)
@@ -147,6 +169,7 @@ p = (
     + labs(x='Trigger Latency (ms)', y="Empirical Cumulative Distribution Function (ECDF)", color='Trigger Type', linetype='Trigger Type')
     + theme_light(base_size=12)
     + theme(
+        figure_size=(5.8, 6.2),
         legend_position='top',
         legend_direction='horizontal',
         legend_title_align='center'
@@ -155,3 +178,5 @@ p = (
     )
 )
 p.save(path=f"{plots_path}", filename=f"trigger_latency.pdf")
+
+# %%

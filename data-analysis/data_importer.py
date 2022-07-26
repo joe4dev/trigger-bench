@@ -44,15 +44,18 @@ TIMEDELTA_COLS = [
     *[f"{col1}{col2}" for col1, col2 in pairwise(EXTRA_TIMESTAMPS)],
 ]
 
+# NOTE: Horizontal legend with two rows requires alternating order
+# because it enumerates in top-to-bottom direction. See R example:
+# https://stackoverflow.com/a/39552713
 TRIGGER_MAPPINGS = {
     'http': 'HTTP',
+    'timer': 'Timer',
     'queue': 'Queue',
-    'storage': 'Storage',
     'database': 'Database',
-    'serviceBus': 'Message',
+    'storage': 'Storage',
     'eventHub': 'Stream',
+    'serviceBus': 'Message',
     'eventGrid': 'Event',
-    'timer': 'Timer'
 }
 
 LABEL_MAPPINGS = {
