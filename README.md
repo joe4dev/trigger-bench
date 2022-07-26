@@ -4,7 +4,7 @@ This repository contains the aws ([aws-triggers](./aws-triggers/), [azure-trigge
 It also bundles a customized extension of the [serverless benchmarker](./serverless-benchmarker/) tool to automate and analyze serverless performance experiments.
 
 The dataset (i.e., `data` directory) is only included in the Zenodo replication package due to its size (>1GB).
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6491259.svg)](https://doi.org/10.5281/zenodo.6491259)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6783287.svg)](https://doi.org/10.5281/zenodo.6783287)
 
 ## TriggerBench
 
@@ -27,7 +27,7 @@ TriggerBench currently supports three triggers on AWS and eight triggers on Micr
 
 > The `data` directory is only included in the Zenodo replication package due to its size (>1GB).
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6491259.svg)](https://doi.org/10.5281/zenodo.6491259)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6783287.svg)](https://doi.org/10.5281/zenodo.6783287)
 
 The `aws` and `azure` sub-directories contain data from benchmark executions from April 2022.
 Each execution is a separate directory with a timestamp in the format `yyyy-mm-dd-HH-MM-SS` (e.g., `2022-04-15_21-58-52`) and contains the following files:
